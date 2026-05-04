@@ -6,7 +6,6 @@
   <title>Jake | Data Analytics Portfolio – Fullscreen Images & PDF CV</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* heartbeat animation for contact button */
     @keyframes heartbeat {
       0%, 100% { transform: scale(1); }
       25% { transform: scale(1.1); }
@@ -14,15 +13,11 @@
       75% { transform: scale(1.05); }
     }
     .animate-heartbeat { animation: heartbeat 1s infinite ease-in-out; }
-    
-    /* Zoomable image cursor */
     .zoomable {
       cursor: zoom-in;
       transition: transform 0.2s ease;
     }
     .zoomable:active { transform: scale(0.98); }
-    
-    /* Lightbox overlay */
     #lightbox {
       transition: opacity 0.25s ease, visibility 0.25s ease;
       opacity: 0;
@@ -32,23 +27,32 @@
       opacity: 1;
       visibility: visible;
     }
-    /* CV Modal */
-    #cvModal {
-      transition: opacity 0.25s ease, visibility 0.25s ease;
+    .video-container {
+      position: relative;
+      cursor: pointer;
     }
-    #cvModal:not(.hidden) {
-      opacity: 1;
-      visibility: visible;
+    .fullscreen-video {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.95);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    /* Progress bar helper */
-    .progress-bar {
-      transition: width 0.6s ease;
+    .fullscreen-video video {
+      max-width: 95vw;
+      max-height: 95vh;
+    }
+    video {
+      background-color: #f3f4f6;
     }
   </style>
 </head>
 <body class="bg-white text-gray-800 antialiased">
 
-  <!-- ================= LIGHTBOX (TAP ANY IMAGE = FULLSCREEN) ================= -->
+  <!-- LIGHTBOX -->
   <div id="lightbox" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/90 backdrop-blur-md" onclick="closeLightbox(event)">
     <button onclick="closeLightbox()" class="absolute top-5 right-6 text-white text-5xl font-light leading-none hover:text-gray-300 z-10">&times;</button>
     <img id="lightboxImg" src="" alt="Fullscreen preview" class="max-w-[94vw] max-h-[90vh] object-contain rounded-xl shadow-2xl border-2 border-white/20">
@@ -69,9 +73,17 @@
       lightbox.classList.add('hidden');
       document.body.style.overflow = '';
     };
+    window.toggleVideoFullscreen = function(videoElement) {
+      if (!videoElement) return;
+      if (videoElement.requestFullscreen) {
+        videoElement.requestFullscreen();
+      } else if (videoElement.webkitRequestFullscreen) {
+        videoElement.webkitRequestFullscreen();
+      } else if (videoElement.msRequestFullscreen) {
+        videoElement.msRequestFullscreen();
+      }
+    };
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
-    
-    // Auto-attach zoomable to all images with class "zoomable"
     document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('img.zoomable').forEach(img => {
         if (!img.hasAttribute('data-zoom')) {
@@ -82,7 +94,7 @@
     });
   </script>
 
-  <!-- ================= HEADER (ONLY Projects + Contact) ================= -->
+  <!-- HEADER -->
   <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
     <div class="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 md:px-8">
       <h1 class="text-xl md:text-2xl font-extrabold">Jake <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">— Data Analyst</span></h1>
@@ -121,8 +133,8 @@
     });
   </script>
 
-  <!-- ================= HERO SECTION (CV button opens local PDF) ================= -->
-  <div class="relative h-screen bg-[url('.images/hero-image-2.jpg')] bg-cover bg-center opacity-0 translate-y-20 transition-all duration-1000 ease-out" data-section>
+  <!-- Hero Section -->
+  <div class="relative h-screen bg-[url('/images/hero-image-2.jpg')] bg-cover bg-center opacity-0 translate-y-20 transition-all duration-1000 ease-out" data-section>
     <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
     <section class="relative z-10 py-12 px-6 text-white">
       <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-8">
@@ -132,65 +144,20 @@
           <button id="viewCvBtn" class="bg-blue-600 text-white font-semibold px-8 py-4 rounded-lg hover:bg-blue-700 transition shadow-lg">📄 View My CV</button>
         </div>
         <div class="flex-1 flex justify-center md:justify-end">
-          <img src=".images/fixed passport image.png" alt="Profile" class="w-full max-w-md aspect-square rounded-full object-cover shadow-2xl zoomable">
+          <img src="/images/fixed passport image.png" alt="Profile" class="w-full max-w-md aspect-square rounded-full object-cover shadow-2xl zoomable">
         </div>
       </div>
     </section>
   </div>
 
-  <!-- ================= CV MODAL – loads .images/Jake CV.pdf ================= -->
-  <div id="cvModal" class="fixed inset-0 z-[10000] hidden bg-black/80 backdrop-blur-sm items-center justify-center" onclick="closeCVModal(event)">
-    <div class="relative bg-white rounded-2xl w-11/12 max-w-4xl h-[85vh] flex flex-col overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
-      <div class="flex justify-between items-center p-4 border-b bg-gray-100">
-        <h3 class="text-xl font-bold">📄 Jake – Data Analyst CV</h3>
-        <button onclick="closeCVModal()" class="text-gray-600 hover:text-gray-900 text-3xl leading-none">&times;</button>
-      </div>
-      <div class="flex-1 bg-gray-200 overflow-auto p-2">
-        <iframe id="cvFrame" src="" class="w-full h-full border-0" title="CV Preview"></iframe>
-        <div id="cvFallback" class="hidden p-8 text-center text-gray-700">
-          <p class="text-red-600 font-semibold">⚠️ CV file not found.</p>
-          <p class="mt-2">Expected location: <code class="bg-gray-300 px-2 py-0.5 rounded">.images/Jake CV.pdf</code> (relative to this HTML file).</p>
-          <p class="mt-4 text-sm">Full path: <strong>C:\Jake Tech\jake-analytics website\.images\Jake CV.pdf</strong></p>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <script>
-    function openCVModal() {
-      const modal = document.getElementById('cvModal');
-      const iframe = document.getElementById('cvFrame');
-      const fallback = document.getElementById('cvFallback');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      document.body.style.overflow = 'hidden';
-      // Use relative path with URL encoding for space
-      const pdfPath = ".images/Jake%20CV.pdf";
-      iframe.src = pdfPath;
-      iframe.onerror = () => { iframe.classList.add('hidden'); fallback.classList.remove('hidden'); };
-      iframe.onload = () => { iframe.classList.remove('hidden'); fallback.classList.add('hidden'); };
-      setTimeout(() => {
-        if (!iframe.contentDocument || iframe.contentDocument.location.href === 'about:blank') {
-          iframe.classList.add('hidden');
-          fallback.classList.remove('hidden');
-        }
-      }, 500);
-    }
-    function closeCVModal(e) {
-      if (e && e.target !== document.getElementById('cvModal')) return;
-      const modal = document.getElementById('cvModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-      document.body.style.overflow = '';
-      document.getElementById('cvFrame').src = '';
-      document.getElementById('cvFallback').classList.add('hidden');
-      document.getElementById('cvFrame').classList.remove('hidden');
-    }
-    document.getElementById('viewCvBtn').addEventListener('click', openCVModal);
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCVModal(); });
+    document.getElementById('viewCvBtn').addEventListener('click', function() {
+      const pdfPath = "/images/Jake%20CV.pdf";
+      window.open(pdfPath, '_blank');
+    });
   </script>
 
-  <!-- ================= SKILLS SECTION ================= -->
+  <!-- Skills -->
   <section class="container mx-auto px-6 py-10 bg-gray-200/30 backdrop-blur-lg opacity-0 translate-y-20 transition-all duration-1000 ease-out" data-section>
     <h2 class="text-2xl font-bold mb-6">Core Skills</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -201,66 +168,89 @@
     </div>
   </section>
 
-  <!-- ================= FEATURED PROJECTS GRID (each card has View Project button) ================= -->
+  <!-- FEATURED PROJECTS GRID -->
   <section id="projects" class="container mx-auto px-6 py-16 opacity-0 translate-y-20 transition-all duration-1000 ease-out" data-section>
     <div class="text-center mb-12">
       <h2 class="text-4xl font-bold mb-4 text-gray-900">Featured Projects</h2>
       <p class="text-gray-600 max-w-2xl mx-auto">Real-world data transformations: from messy statements to clean, decision-ready dashboards.</p>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-      <!-- Card 1: Excel Project -->
-      <div class="bg-white rounded-2xl shadow-lg overflow-hidden border">
+
+      <!-- Excel Project Card -->
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden border flex flex-col h-full">
         <div class="h-2 bg-gradient-to-r from-green-400 to-emerald-500"></div>
         <div class="h-48 bg-green-50 flex items-center justify-center gap-1 p-2">
-          <img src=".images/Messy%20Spreadsheet.png" class="w-1/2 h-full object-cover zoomable rounded" onclick="openImage(this.src)">
-          <img src=".images/Cleaned%20Spreadsheet.png" class="w-1/2 h-full object-cover zoomable rounded" onclick="openImage(this.src)">
+          <img src="/images/Messy%20Spreadsheet.png" class="w-1/2 h-full object-cover zoomable rounded" onclick="openImage(this.src)">
+          <img src="/images/Cleaned%20Spreadsheet.png" class="w-1/2 h-full object-cover zoomable rounded" onclick="openImage(this.src)">
         </div>
-        <div class="p-5">
-          <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">📊 Excel + Power Query</span>
-          <h3 class="text-xl font-bold mt-2">Data Cleaning: Messy → Clean</h3>
-          <p class="text-gray-600 text-sm mt-1">M-PESA statement transformation</p>
-          <a href="#project-excel" class="mt-4 inline-block w-full text-center bg-green-600 text-white font-semibold py-2 rounded-lg hover:bg-green-700 smooth-scroll">📁 View Project</a>
+        <div class="p-5 flex flex-col flex-grow">
+          <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full w-fit">📊 Excel + Power Query</span>
+          <h3 class="text-xl font-bold mt-2">Personal Finance Dashboard (Excel)</h3>
+          <p class="text-gray-500 text-xs mt-2 flex-grow">Transformed an unstructured M‑Pesa statement into a clean, analysis‑ready dataset using Power Query. Designed an interactive dashboard revealing spending patterns, income trends, and cash flow behavior through KPI cards and visuals.</p>
+          <a href="https://github.com/Jake-Analyst/Personal-Finance-Dashboard-Excel-" target="_blank" class="mt-4 inline-block w-full text-center bg-green-600 text-white font-semibold py-2 rounded-lg hover:bg-green-700">🔗 View on GitHub</a>
         </div>
       </div>
-      <!-- Card 2: SQL Project -->
-      <div class="bg-white rounded-2xl shadow-lg overflow-hidden border">
+
+      <!-- SQL Project Card -->
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden border flex flex-col h-full">
         <div class="h-2 bg-gradient-to-r from-blue-400 to-indigo-500"></div>
-        <div class="h-48 bg-blue-50 flex items-center justify-center"><img src=".images/sql-dashboard.png" class="object-contain h-full zoomable" onclick="openImage(this.src)" onerror="this.src='https://placehold.co/600x400?text=SQL+Preview'"></div>
-        <div class="p-5">
-          <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">🗄️ SQL</span>
-          <h3 class="text-xl font-bold mt-2">HR Analytics SQL</h3>
-          <p class="text-gray-600 text-sm mt-1">Complex joins, window functions</p>
-          <a href="#project-sql" class="mt-4 inline-block w-full text-center bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 smooth-scroll">🗄️ View Project</a>
+        <div class="h-48 bg-blue-50 flex items-center justify-center"><img src="/images/sql-dashboard.png" class="object-contain h-full zoomable" onclick="openImage(this.src)" onerror="this.src='https://placehold.co/600x400?text=SQL+Preview'"></div>
+        <div class="p-5 flex flex-col flex-grow">
+          <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full w-fit">🗄️ SQL</span>
+          <h3 class="text-xl font-bold mt-2">SQL‑Driven HR Analytics</h3>
+          <p class="text-gray-500 text-xs mt-2 flex-grow">Analyzed salary, gender, department, and age distribution across an organization using SQL JOINs, AVG, CASE WHEN, and GROUP BY. Uncovered pay gaps, top earners, and workforce composition to support fairer HR decisions.</p>
+          <a href="https://github.com/Jake-Analyst/HR-Analytics-SQL-Project" target="_blank" class="mt-4 inline-block w-full text-center bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700">🔗 View on GitHub</a>
         </div>
       </div>
-      <!-- Card 3: HR Attrition -->
-      <div class="bg-white rounded-2xl shadow-lg overflow-hidden border">
+
+      <!-- HR Attrition Card -->
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden border flex flex-col h-full">
         <div class="h-2 bg-gradient-to-r from-orange-400 to-red-500"></div>
-        <div class="h-48 bg-orange-50 flex items-center justify-center"><img src=".images/hr-attrition-dashboard.png" class="object-contain h-full zoomable" onclick="openImage(this.src)" onerror="this.src='https://placehold.co/600x400?text=Attrition+Dashboard'"></div>
-        <div class="p-5">
-          <span class="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">📊 Power BI</span>
-          <h3 class="text-xl font-bold mt-2">HR Employee Attrition</h3>
-          <p class="text-gray-600 text-sm mt-1">Retention & predictive analytics</p>
-          <a href="#project-attrition" class="mt-4 inline-block w-full text-center bg-orange-600 text-white font-semibold py-2 rounded-lg hover:bg-orange-700 smooth-scroll">📊 View Project</a>
+        <div class="h-48 bg-orange-50 flex items-center justify-center"><img src="/images/hr-attrition-dashboard.png" class="object-contain h-full zoomable" onclick="openImage(this.src)" onerror="this.src='https://placehold.co/600x400?text=Attrition+Dashboard'"></div>
+        <div class="p-5 flex flex-col flex-grow">
+          <span class="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full w-fit">📊 Power BI</span>
+          <h3 class="text-xl font-bold mt-2">Employee Attrition Dashboard</h3>
+          <p class="text-gray-500 text-xs mt-2 flex-grow">Built with Excel and Power BI to analyze employee turnover. Cleaned a Kaggle HR dataset, then examined attrition by department, income, job satisfaction, and more – delivering actionable insights for proactive retention strategies.</p>
+          <a href="https://github.com/Jake-Analyst/HR-Employee-Attrition" target="_blank" class="mt-4 inline-block w-full text-center bg-orange-600 text-white font-semibold py-2 rounded-lg hover:bg-orange-700">🔗 View on GitHub</a>
         </div>
       </div>
-      <!-- Card 4: Power BI Sales -->
-      <div class="bg-white rounded-2xl shadow-lg overflow-hidden border">
+
+      <!-- Power BI Sales Card -->
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden border flex flex-col h-full">
         <div class="h-2 bg-gradient-to-r from-purple-400 to-pink-500"></div>
-        <div class="h-48 bg-purple-50 flex items-center justify-center"><img src=".images/powerbi-dashboard.png" class="object-contain h-full zoomable" onclick="openImage(this.src)" onerror="this.src='https://placehold.co/600x400?text=Power+BI'"></div>
-        <div class="p-5">
-          <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">📈 Power BI</span>
+        <div class="h-48 bg-purple-50 flex items-center justify-center"><img src="/images/powerbi-dashboard.png" class="object-contain h-full zoomable" onclick="openImage(this.src)" onerror="this.src='https://placehold.co/600x400?text=Power+BI'"></div>
+        <div class="p-5 flex flex-col flex-grow">
+          <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full w-fit">📈 Power BI</span>
           <h3 class="text-xl font-bold mt-2">Sales Performance Dashboard</h3>
-          <p class="text-gray-600 text-sm mt-1">DAX measures, real-time KPIs</p>
-          <a href="#project-powerbi" class="mt-4 inline-block w-full text-center bg-purple-600 text-white font-semibold py-2 rounded-lg hover:bg-purple-700 smooth-scroll">📈 View Project</a>
+          <p class="text-gray-500 text-xs mt-2 flex-grow">An interactive Power BI dashboard combining multiple Excel sources, cleaned with Power Query. Highlights top products, regional performance, seasonal peaks, and profitability trends to drive business growth decisions.</p>
+          <a href="https://github.com/Jake-Analyst/Sales-Performance-Dashboard-" target="_blank" class="mt-4 inline-block w-full text-center bg-purple-600 text-white font-semibold py-2 rounded-lg hover:bg-purple-700">🔗 View on GitHub</a>
+        </div>
+      </div>
+
+      <!-- JAKE Financial Management System Card (FIXED VIDEO) -->
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden border flex flex-col h-full">
+        <div class="h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600"></div>
+        <div class="h-48 bg-gray-100 flex items-center justify-center p-2">
+          <video class="w-full h-full object-cover rounded" controls muted autoplay playsinline preload="auto" poster="/images/faith%20dashboard.jpeg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <source src="/images/faiths%20dashboard.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div style="display: none; align-items: center; justify-content: center; width: 100%; height: 100%; background: #f3f4f6; color: #6b7280; font-size: 0.875rem;">⚠️ Video failed to load</div>
+        </div>
+        <div class="p-5 flex flex-col flex-grow">
+          <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full w-fit">💹 Excel + Power Query | Python + Flask + AI</span>
+          <h3 class="text-xl font-bold mt-2">JAKE Financial Management System</h3>
+          <p class="text-gray-600 text-sm mt-1">M‑Pesa analysis & AI financial insights</p>
+          <p class="text-gray-500 text-xs mt-2 flex-grow">Cleaned M‑Pesa data with Excel & Power Query, then built a Python/Flask dashboard with AI (Gemini) for real‑time KPIs, smart insights, an interactive chat assistant, and automated PDF reporting.</p>
+          <a href="https://github.com/Jake-Analyst/Personal-Financial-Management-System/tree/main" target="_blank" class="mt-4 inline-block w-full text-center bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700">🔗 View on GitHub</a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ================= DETAILED PROJECT SECTIONS ================= -->
+  <!-- DETAILED PROJECT SECTIONS -->
 
-  <!-- Excel Project -->
+  <!-- Excel Project Detail -->
   <section id="project-excel" class="bg-gradient-to-br from-green-50 to-emerald-50 py-20 opacity-0 translate-y-20 transition-all duration-1000 ease-out" data-section>
     <div class="container mx-auto px-6">
       <a href="#projects" class="inline-flex items-center text-green-600 hover:text-green-700 font-semibold mb-8 smooth-scroll">← Back to Projects</a>
@@ -271,59 +261,59 @@
         </div>
         <div class="p-8 bg-gray-50">
           <div class="grid md:grid-cols-2 gap-6">
-            <div><img src=".images/Messy%20Spreadsheet.png" class="rounded-lg w-full zoomable" onclick="openImage(this.src)"><p class="text-center mt-2 text-red-600">⚠️ Messy raw data</p></div>
-            <div><img src=".images/Cleaned%20Spreadsheet.png" class="rounded-lg w-full zoomable" onclick="openImage(this.src)"><p class="text-center mt-2 text-green-600">✅ Cleaned data</p></div>
+            <div><img src="/images/Messy%20Spreadsheet.png" class="rounded-lg w-full zoomable" onclick="openImage(this.src)"><p class="text-center mt-2 text-red-600">⚠️ Messy raw data</p></div>
+            <div><img src="/images/Cleaned%20Spreadsheet.png" class="rounded-lg w-full zoomable" onclick="openImage(this.src)"><p class="text-center mt-2 text-green-600">✅ Cleaned data</p></div>
           </div>
+          <p class="mt-6 text-gray-700 leading-relaxed">
+            This project presents an end-to-end personal finance analytics workflow built in Excel using an M‑Pesa statement as the source of raw transaction data. The statement was transformed from an unstructured file into a clean, analysis‑ready dataset using Power Query and data standardization techniques. The dashboard was designed to reveal spending patterns, income trends, and cash flow behavior through interactive visuals and KPI cards. It demonstrates strong Excel‑based data cleaning, transformation, and visualization skills while turning financial records into practical decision‑making insights.
+          </p>
         </div>
-        <div class="p-8 border-t"><a href="https://github.com/Jake-Analyst/Personal-Finance-Dashboard-Excel-" class="bg-green-600 text-white px-6 py-3 rounded-lg inline-block">View on GitHub →</a></div>
+        <div class="p-8 border-t"><a href="https://github.com/Jake-Analyst/Personal-Finance-Dashboard-Excel-" target="_blank" class="bg-green-600 text-white px-6 py-3 rounded-lg inline-block">View on GitHub →</a></div>
       </div>
     </div>
   </section>
 
-  <!-- SQL Project -->
+  <!-- SQL Project Detail -->
   <section id="project-sql" class="bg-gradient-to-br from-blue-50 to-indigo-50 py-20 opacity-0 translate-y-20 transition-all duration-1000 ease-out" data-section>
     <div class="container mx-auto px-6">
       <a href="#projects" class="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold mb-8 smooth-scroll">← Back to Projects</a>
       <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
         <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-8 text-white">
-          <h2 class="text-3xl font-bold">HR Analytics SQL Project</h2>
+          <h2 class="text-3xl font-bold">SQL‑Driven HR Analytics Project</h2>
           <p class="text-blue-100">Advanced Database Analysis</p>
         </div>
-        <div class="p-8"><img src=".images/SQL_tables.png" class="rounded-xl w-full zoomable" onclick="openImage(this.src)" onerror="this.src='https://placehold.co/900x500?text=SQL+Schema'"><p class="mt-4">Complex JOINs, aggregations, window functions to extract workforce insights.</p><a href="https://github.com/Jake-Analyst/HR-Analytics-SQL-Project" class="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg">Repository</a></div>
+        <div class="p-8">
+          <img src="/images/SQL_tables.png" class="rounded-xl w-full zoomable" onclick="openImage(this.src)" onerror="this.src='https://placehold.co/900x500?text=SQL+Schema'">
+          <p class="mt-6 text-gray-700 leading-relaxed">
+            This project is an SQL‑based human resources analytics solution designed to uncover patterns in salary, gender, department, and age distribution across an organization. By combining employee salary and demographic tables, the analysis explores pay differences, workforce composition, and compensation trends. The queries identify high‑paying departments, top earners, gender pay gaps, and age group patterns using SQL functions such as JOIN, AVG, CASE WHEN, and GROUP BY. The project demonstrates how raw HR data can be transformed into meaningful insights that support fairer and more informed workforce decisions.
+          </p>
+          <a href="https://github.com/Jake-Analyst/HR-Analytics-SQL-Project" target="_blank" class="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg">View on GitHub →</a>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- HR Attrition Project (matches the provided image) -->
+  <!-- HR Attrition Project Detail -->
   <section id="project-attrition" class="bg-gradient-to-br from-orange-50 to-red-50 py-20 opacity-0 translate-y-20 transition-all duration-1000 ease-out" data-section>
     <div class="container mx-auto px-6">
       <a href="#projects" class="inline-flex items-center text-orange-600 hover:text-orange-700 font-semibold mb-8 smooth-scroll">← Back to Projects</a>
       <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
         <div class="bg-gradient-to-r from-orange-500 to-red-600 p-8 text-white">
-          <h2 class="text-3xl font-bold">HR Employee Attrition Analysis</h2>
+          <h2 class="text-3xl font-bold">Employee Attrition Dashboard</h2>
           <p class="text-orange-100">Workforce Retention & Predictive Analytics</p>
         </div>
-        <!-- Metrics row -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 p-8 bg-gray-50 border-b">
-          <div class="bg-white p-4 rounded-xl shadow text-center"><p class="text-sm text-gray-500">Average Monthly Income</p><p class="text-3xl font-bold text-green-700">Ksh6.5K</p></div>
-          <div class="bg-white p-4 rounded-xl shadow text-center"><p class="text-sm text-gray-500">Total Employees</p><p class="text-3xl font-bold text-blue-700">1,470</p></div>
-          <div class="bg-white p-4 rounded-xl shadow text-center"><p class="text-sm text-gray-500">Attrition Rate</p><p class="text-3xl font-bold text-red-600">16%</p></div>
-          <div class="bg-white p-4 rounded-xl shadow text-center"><p class="text-sm text-gray-500">Employees Working Overtime</p><p class="text-3xl font-bold text-amber-600">28%</p></div>
+        <div class="p-8">
+          <img src="/images/HR-Attrition.png" class="rounded-xl w-full zoomable" onclick="openImage(this.src)" onerror="this.src='https://placehold.co/1000x600?text=Attrition+Dashboard'">
+          <p class="mt-6 text-gray-700 leading-relaxed">
+            This project is an HR analytics dashboard built with Excel and Power BI to analyze employee attrition and the factors influencing turnover. It uses a public Kaggle HR dataset and follows a complete workflow from data cleaning and transformation to dashboard design and insight generation. The dashboard examines attrition by department, gender, marital status, income, overtime, and job satisfaction to help HR teams understand retention challenges. It provides actionable insights that support proactive employee retention strategies and better workforce planning.
+          </p>
+          <a href="https://github.com/Jake-Analyst/HR-Employee-Attrition" target="_blank" class="mt-4 inline-block bg-orange-600 text-white px-6 py-2 rounded-lg">View on GitHub →</a>
         </div>
-        <!-- Charts -->
-        <div class="p-8 space-y-10">
-          <div><h3 class="text-xl font-bold">📊 Attrition Count & Monthly Income by Department</h3><div class="bg-gray-100 p-5 rounded-xl"><div class="mb-3"><div class="flex justify-between"><span>Human Resources</span><span>588 (40%)</span></div><div class="w-full bg-gray-300 rounded-full h-3"><div class="bg-red-500 h-3 rounded-full w-[40%]"></div></div></div><div><div class="flex justify-between"><span>Sales</span><span>882 (60%)</span></div><div class="w-full bg-gray-300 rounded-full h-3"><div class="bg-orange-500 h-3 rounded-full w-[60%]"></div></div></div><p class="text-sm mt-2">Sales department has higher total monthly income contribution.</p></div></div>
-          <div><h3 class="text-xl font-bold">💍 Attrition by Marital Status</h3><div class="grid md:grid-cols-3 gap-4"><div class="bg-white p-4 rounded-xl shadow text-center"><span class="block text-2xl">💍</span><span class="font-bold">Married</span><p class="text-lg font-semibold">22.2%</p><div class="w-full bg-gray-200 rounded-full h-2 mt-2"><div class="bg-purple-500 h-2 rounded-full w-[22.2%]"></div></div><span class="text-xs">327 employees</span></div><div class="bg-white p-4 rounded-xl shadow text-center"><span class="block text-2xl">💑</span><span class="font-bold">Single</span><p class="text-lg font-semibold">46.4%</p><div class="w-full bg-gray-200 rounded-full h-2 mt-2"><div class="bg-blue-500 h-2 rounded-full w-[46.4%]"></div></div><span class="text-xs">673 employees</span></div><div class="bg-white p-4 rounded-xl shadow text-center"><span class="block text-2xl">💔</span><span class="font-bold">Divorced</span><p class="text-lg font-semibold">31.4%</p><div class="w-full bg-gray-200 rounded-full h-2 mt-2"><div class="bg-amber-500 h-2 rounded-full w-[31.4%]"></div></div><span class="text-xs">470 employees</span></div></div></div>
-          <div><h3 class="text-xl font-bold">👔 Sum of Employee Count by Job Role & Attrition</h3><div class="grid grid-cols-2 gap-3"><div class="bg-orange-100 p-3 rounded-lg">Sales Executive: 268</div><div class="bg-orange-100 p-3 rounded-lg">Research Scientist: 245</div><div class="bg-orange-100 p-3 rounded-lg">Lab Technician: 197</div><div class="bg-orange-100 p-3 rounded-lg">Human Resources: 112</div></div></div>
-          <div><h3 class="text-xl font-bold">👥 Attrition by Gender</h3><div class="flex gap-6"><div class="bg-blue-100 p-4 rounded-xl flex-1 text-center"><span class="font-bold">Male</span><p class="text-2xl font-semibold">49%</p><span class="text-sm">582 employees</span></div><div class="bg-pink-100 p-4 rounded-xl flex-1 text-center"><span class="font-bold">Female</span><p class="text-2xl font-semibold">51%</p><span class="text-sm">607 employees</span></div></div></div>
-          <div><h3 class="text-xl font-bold">📈 Avg. Percent Salary Hike by Attrition & Performance Rating</h3><div class="bg-gray-50 p-4 rounded-lg"><div class="flex justify-between border-b pb-2"><span>Performance Rating</span><span>Avg Hike</span></div><div class="flex justify-between mt-2"><span>Excellent (5) - Stayed</span><span>18.4%</span></div><div class="flex justify-between"><span>Excellent (5) - Attrited</span><span>14.2%</span></div><div class="flex justify-between"><span>Good (4) - Stayed</span><span>15.3%</span></div><div class="flex justify-between"><span>Good (4) - Attrited</span><span>12.1%</span></div></div></div>
-        </div>
-        <div class="p-8 text-center border-t"><a href="https://github.com/Jake-Analyst/HR-Employee-Attrition" class="bg-orange-600 text-white px-8 py-3 rounded-lg inline-block hover:bg-orange-700">🔍 View Full Dashboard on GitHub</a></div>
       </div>
     </div>
   </section>
 
-  <!-- Power BI Project -->
+  <!-- Power BI Sales Project Detail -->
   <section id="project-powerbi" class="bg-gradient-to-br from-purple-50 to-pink-50 py-20 opacity-0 translate-y-20 transition-all duration-1000 ease-out" data-section>
     <div class="container mx-auto px-6">
       <a href="#projects" class="inline-flex items-center text-purple-600 hover:text-purple-700 font-semibold mb-8 smooth-scroll">← Back to Projects</a>
@@ -332,7 +322,59 @@
           <h2 class="text-3xl font-bold">Sales Performance Dashboard</h2>
           <p class="text-purple-100">Power BI Business Intelligence</p>
         </div>
-        <div class="p-8"><img src=".images/Sales-Dashboard.png" class="rounded-xl w-full zoomable" onclick="openImage(this.src)" onerror="this.src='https://placehold.co/1000x600?text=Sales+Dashboard'"><p class="mt-4">End-to-end ETL, DAX measures, real-time KPIs for sales performance.</p><a href="https://github.com/Jake-Analyst/Sales-Performance-Dashboard-" class="mt-4 inline-block bg-purple-600 text-white px-6 py-2 rounded-lg">Repository</a></div>
+        <div class="p-8">
+          <img src="/images/Sales-Dashboard.png" class="rounded-xl w-full zoomable" onclick="openImage(this.src)" onerror="this.src='https://placehold.co/1000x600?text=Sales+Dashboard'">
+          <p class="mt-6 text-gray-700 leading-relaxed">
+            This Power BI dashboard provides a clear and interactive view of sales performance across regions, products, and time periods. The project brings together sales data from Excel files, cleans it using Power Query, and models relationships between the key tables to support accurate analysis. It highlights important trends such as top‑performing regions, product growth, seasonal peaks, and profitability patterns. The final result is a decision‑support dashboard that helps management track sales performance and identify growth opportunities more effectively.
+          </p>
+          <a href="https://github.com/Jake-Analyst/Sales-Performance-Dashboard-" target="_blank" class="mt-4 inline-block bg-purple-600 text-white px-6 py-2 rounded-lg">View on GitHub →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- JAKE Financial Management System Detailed Section (FIXED VIDEO) -->
+  <section id="project-finance" class="bg-gradient-to-br from-indigo-50 to-blue-50 py-20 opacity-0 translate-y-20 transition-all duration-1000 ease-out" data-section>
+    <div class="container mx-auto px-6">
+      <a href="#projects" class="inline-flex items-center text-indigo-600 hover:text-indigo-700 font-semibold mb-8 smooth-scroll">← Back to Projects</a>
+      <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 p-8 text-white">
+          <h2 class="text-3xl font-bold">JAKE Personal Financial Management System</h2>
+          <p class="text-blue-100">AI‑Powered Financial Analytics, Budgeting & Automated Reporting</p>
+        </div>
+        <div class="p-8 flex flex-col gap-6">
+          <div class="cursor-pointer rounded-xl overflow-hidden shadow-lg" onclick="openImage('/images/faith%20dashboard.jpeg')">
+            <img src="/images/faith%20dashboard.jpeg" alt="Dashboard Preview" class="w-full zoomable">
+          </div>
+          <div class="video-container rounded-xl overflow-hidden shadow-lg" onclick="toggleVideoFullscreen(this.querySelector('video'))">
+            <video class="w-full" controls muted autoplay playsinline preload="auto" poster="/images/faith%20dashboard.jpeg" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+              <source src="/images/faiths%20dashboard.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+            <div style="display: none; text-align: center; padding: 2rem; background: #f3f4f6; color: #6b7280;">⚠️ Video failed to load. Check console for details.</div>
+          </div>
+          <div class="space-y-4 mt-4">
+            <p class="text-gray-700 leading-relaxed">
+              <strong>Data Preparation & Cleaning:</strong> The raw M‑Pesa statement was first processed using <span class="font-medium">Excel and Power Query</span> to remove duplicates, handle missing values, standardize date formats, and categorize transactions. This ensured a single, trusted source of truth before loading into the analytics system.
+            </p>
+            <p class="text-gray-700 leading-relaxed">
+              <strong>System Architecture:</strong> The dashboard was built with <span class="font-medium">Python (Flask)</span> and <span class="font-medium">SQLite</span> for on‑the‑fly data storage and querying. <span class="font-medium">Pandas</span> handles dynamic data profiling, while <span class="font-medium">Chart.js</span> and <span class="font-medium">Tailwind CSS</span> render responsive, real‑time visualizations for income, expenses, savings rate, budget utilisation, and spending patterns.
+            </p>
+            <p class="text-gray-700 leading-relaxed">
+              <strong>AI & Financial Intelligence:</strong> Integrated with <span class="font-medium">Google Gemini</span>, the system provides automated variance analysis, trend forecasting, anomaly detection, and a conversational financial assistant that answers natural‑language questions using the actual transaction data. A one‑click <span class="font-medium">PDF report</span> (via ReportLab) includes executive summaries, spending breakdowns, fee analyses, and AI‑generated recommendations – all directly from the uploaded file.
+            </p>
+            <p class="text-gray-700 font-medium">
+              <span class="inline-block bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full">Python</span>
+              <span class="inline-block bg-indigo-100 text-indigo-700 text-xs px-3 py-1 rounded-full ml-1">Flask</span>
+              <span class="inline-block bg-purple-100 text-purple-700 text-xs px-3 py-1 rounded-full ml-1">Pandas</span>
+              <span class="inline-block bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full ml-1">Excel/ Power Query</span>
+              <span class="inline-block bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full ml-1">Chart.js</span>
+              <span class="inline-block bg-pink-100 text-pink-700 text-xs px-3 py-1 rounded-full ml-1">Tailwind CSS</span>
+              <span class="inline-block bg-indigo-100 text-indigo-700 text-xs px-3 py-1 rounded-full ml-1">Gemini AI</span>
+            </p>
+            <a href="https://github.com/Jake-Analyst/Personal-Financial-Management-System/tree/main" target="_blank" class="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold shadow hover:bg-indigo-700">🔗 View on GitHub</a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -351,7 +393,6 @@
   </footer>
 
   <script>
-    // Intersection Observer for scroll animations
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -361,7 +402,6 @@
       });
     }, { threshold: 0.1 });
     document.querySelectorAll("[data-section]").forEach(section => observer.observe(section));
-    // Smooth scroll for all .smooth-scroll links
     document.querySelectorAll('a.smooth-scroll').forEach(anchor => {
       anchor.addEventListener('click', function(e) {
         e.preventDefault();
